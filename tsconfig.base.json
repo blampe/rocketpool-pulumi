@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "outDir": "bin",
+    "pretty": true,
+    "rootDir": ".",
+    "sourceMap": true,
+    "strict": true,
+    "target": "es2016"
+  }
+}

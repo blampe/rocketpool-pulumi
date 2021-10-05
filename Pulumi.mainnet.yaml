@@ -1,0 +1,20 @@
+config:
+  rocketpool:consensus:
+    - teku
+    - lighthouse
+  rocketpool:execution:
+    - infura
+  rocketpool:gkeMonitoring: "true"
+  rocketpool:infura:
+    eth1Endpoint:
+      secure: FIXME
+    eth2Endpoint:
+      secure: FIXME
+  rocketpool:kubeconfig: ""
+  rocketpool:lighthouse:
+    checkpointUrl:
+      secure: FIXME
+    replicas: 0
+  rocketpool:rocketpool:
+    nodePassword:
+      secure: FIXME

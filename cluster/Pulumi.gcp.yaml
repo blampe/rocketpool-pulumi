@@ -1,0 +1,5 @@
+config:
+  gcp:project:
+  gcp:region:
+  gcp:zone:
+  rocketpool-cluster:notificationChannels: []

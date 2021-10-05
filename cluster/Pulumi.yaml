@@ -1,0 +1,3 @@
+name: rocketpool-cluster
+runtime: nodejs
+description: A GKE autopilot cluster for staking with Rocket Pool
