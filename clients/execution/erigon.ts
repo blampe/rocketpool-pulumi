@@ -29,7 +29,7 @@ export class ErigonClient implements ExecutionClient {
       network: network,
       replicas: opts.replicas ?? 1,
       image: opts.image || "thorax/erigon",
-      tag: opts.tag || "v2022.01.02",
+      tag: opts.tag || "v2022.02.03",
       cpu: opts.cpu || "4000m",
       memory: opts.memory || "10Gi",
       external: opts.external || false,
@@ -37,7 +37,7 @@ export class ErigonClient implements ExecutionClient {
       volume: {
         snapshot: opts.volume?.snapshot || false,
         source: opts.volume?.source || "data-erigon-0",
-        storage: opts.volume?.storage || (mainnet ? "512Gi" : "64Gi"),
+        storage: opts.volume?.storage || (mainnet ? "1024Gi" : "64Gi"),
         storageClass: opts.volume?.storageClass || (mainnet ? "cheap" : "fast"),
       },
     });
@@ -197,7 +197,7 @@ export class ErigonClient implements ExecutionClient {
                 fsGroup: 1000,
                 fsGroupChangePolicy: "OnRootMismatch",
               },
-              terminationGracePeriodSeconds: 120,
+              terminationGracePeriodSeconds: 600,
               nodeSelector: {
                 "cloud.google.com/gke-spot": "true",
               },
