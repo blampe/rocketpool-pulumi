@@ -31,6 +31,7 @@ export class ErigonClient implements ExecutionClient {
       image: opts.image || "thorax/erigon",
       tag: opts.tag || "v2022.02.03",
       cpu: opts.cpu || "4000m",
+      command: opts.command || [],
       memory: opts.memory || "10Gi",
       external: opts.external || false,
       targetPeers: opts.targetPeers || 33,
@@ -51,6 +52,7 @@ export class ErigonClient implements ExecutionClient {
     tag,
     cpu,
     memory,
+    command,
     external,
     volume,
   }: ErigonClientOptions) {
@@ -113,14 +115,16 @@ export class ErigonClient implements ExecutionClient {
                 {
                   name: "erigon",
                   image: `${image}:${tag}`,
-                  command: [
-                    "erigon",
-                    "--prune.r.before=11184524",
-                    "--prune=htc",
-                    "--datadir=/data",
-                    `--chain=${network == "mainnet" ? network : "goerli"}`,
-                    "--state.stream.disable", // Caching is disable on the rpcdaemon
-                  ],
+                  command: command.length
+                    ? command
+                    : [
+                        "erigon",
+                        "--prune.r.before=11184524",
+                        "--prune=htc",
+                        "--datadir=/data",
+                        `--chain=${network == "mainnet" ? network : "goerli"}`,
+                        "--state.stream.disable", // Caching is disable on the rpcdaemon
+                      ],
                   resources: {
                     limits: { cpu: cpu, memory: memory },
                     requests: { cpu: cpu, memory: memory },

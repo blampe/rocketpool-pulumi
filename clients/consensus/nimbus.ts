@@ -27,6 +27,7 @@ export class NimbusClient implements ConsensusClient {
       tag: opts.tag || "multiarch-v1.6.0",
       cpu: opts.cpu || "3",
       memory: opts.memory || "3Gi",
+      command: opts.command || [],
       external: opts.external || false,
       targetPeers: opts.targetPeers || 160,
       executionClients: executionClients,
@@ -47,6 +48,7 @@ export class NimbusClient implements ConsensusClient {
     tag,
     cpu,
     memory,
+    command,
     external,
     targetPeers,
     executionClients,
@@ -111,22 +113,24 @@ export class NimbusClient implements ConsensusClient {
                 {
                   name: "nimbus",
                   image: `${image}:${tag}`,
-                  command: [
-                    `./run-${network}-beacon-node.sh`,
-                    "--non-interactive",
-                    "--num-threads=0",
-                    "--enr-auto-update",
-                    "--data-dir=/data",
-                    "--rest",
-                    "--rest-address=0.0.0.0",
-                    `--max-peers=${targetPeers}`,
-                    ...executionClients.map(
-                      (c) =>
-                        pulumi.interpolate`--web3-url=${
-                          c.wsEndpoint ?? c.endpoint
-                        }`
-                    ),
-                  ],
+                  command: command.length
+                    ? command
+                    : [
+                        `./run-${network}-beacon-node.sh`,
+                        "--non-interactive",
+                        "--num-threads=0",
+                        "--enr-auto-update",
+                        "--data-dir=/data",
+                        "--rest",
+                        "--rest-address=0.0.0.0",
+                        `--max-peers=${targetPeers}`,
+                        ...executionClients.map(
+                          (c) =>
+                            pulumi.interpolate`--web3-url=${
+                              c.wsEndpoint ?? c.endpoint
+                            }`
+                        ),
+                      ],
                   resources: {
                     limits: { cpu: cpu, memory: memory },
                     requests: { cpu: cpu, memory: memory },

@@ -27,6 +27,7 @@ export class NethermindClient implements ExecutionClient {
       tag: opts.tag || "1.12.4",
       cpu: opts.cpu || "2",
       memory: opts.memory || "4Gi",
+      command: opts.command || [],
       external: opts.external || false,
       targetPeers: opts.targetPeers || 50,
       volume: {
@@ -46,6 +47,7 @@ export class NethermindClient implements ExecutionClient {
     tag,
     cpu,
     memory,
+    command,
     external,
     targetPeers,
     volume,
@@ -109,27 +111,31 @@ export class NethermindClient implements ExecutionClient {
                 {
                   name: "nethermind",
                   image: `${image}:${tag}`,
-                  command: [
-                    "./Nethermind.Runner",
-                    `--config=${network === "mainnet" ? network : "goerli"}`,
-                    "--JsonRpc.Enabled=true",
-                    "--JsonRpc.Host=0.0.0.0",
-                    "--Pruning.Enabled=true",
-                    "--Init.BaseDbPath=/data",
-                    "--KeyStore.EnodeKeyFile=/data/node.key.plain",
-                    `--Init.MemoryHint=1500000000`,
-                    `--Network.MaxActivePeers=${targetPeers}`,
-                    "--HealthChecks.Enabled=true",
-                    "--Init.WebSocketsEnabled=true",
-                    "--Sync.DownloadBodiesInFastSync=true",
-                    "--Sync.DownloadReceiptsInFastSync=true",
-                    ...(network === "mainnet"
-                      ? [
-                          "--Sync.AncientBodiesBarrier=11052984",
-                          "--Sync.AncientReceiptsBarrier=11052984",
-                        ]
-                      : []),
-                  ],
+                  command: command.length
+                    ? command
+                    : [
+                        "./Nethermind.Runner",
+                        `--config=${
+                          network === "mainnet" ? network : "goerli"
+                        }`,
+                        "--JsonRpc.Enabled=true",
+                        "--JsonRpc.Host=0.0.0.0",
+                        "--Pruning.Enabled=true",
+                        "--Init.BaseDbPath=/data",
+                        "--KeyStore.EnodeKeyFile=/data/node.key.plain",
+                        `--Init.MemoryHint=1500000000`,
+                        `--Network.MaxActivePeers=${targetPeers}`,
+                        "--HealthChecks.Enabled=true",
+                        "--Init.WebSocketsEnabled=true",
+                        "--Sync.DownloadBodiesInFastSync=true",
+                        "--Sync.DownloadReceiptsInFastSync=true",
+                        ...(network === "mainnet"
+                          ? [
+                              "--Sync.AncientBodiesBarrier=11052984",
+                              "--Sync.AncientReceiptsBarrier=11052984",
+                            ]
+                          : []),
+                      ],
                   resources: {
                     limits: { cpu: cpu, memory: memory },
                     requests: { cpu: cpu, memory: memory },

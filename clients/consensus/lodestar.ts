@@ -27,6 +27,7 @@ export class LodestarClient implements ConsensusClient {
       tag: opts.tag || "v0.33.0",
       cpu: opts.cpu || "3",
       memory: opts.memory || "3Gi",
+      command: opts.command || [],
       external: opts.external || false,
       targetPeers: opts.targetPeers || 30,
       executionClients: executionClients,
@@ -47,6 +48,7 @@ export class LodestarClient implements ConsensusClient {
     tag,
     cpu,
     memory,
+    command,
     external,
     targetPeers,
     executionClients,
@@ -112,20 +114,22 @@ export class LodestarClient implements ConsensusClient {
                 {
                   name: "lodestar",
                   image: `${image}:${tag}`,
-                  command: [
-                    "./node_modules/.bin/lodestar",
-                    "beacon",
-                    `--network=${network}`,
-                    "--metrics.enabled=true",
-                    "--metrics.serverPort=8008",
-                    "--rootDir=/data",
-                    `--network.maxPeers=${targetPeers}`,
-                    ...(network == "mainnet"
-                      ? ["--weakSubjectivitySyncLatest=true"]
-                      : []),
-                    "--eth1.providerUrls",
-                    ...executionClients.map((c) => c.endpoint),
-                  ],
+                  command: command.length
+                    ? command
+                    : [
+                        "./node_modules/.bin/lodestar",
+                        "beacon",
+                        `--network=${network}`,
+                        "--metrics.enabled=true",
+                        "--metrics.serverPort=8008",
+                        "--rootDir=/data",
+                        `--network.maxPeers=${targetPeers}`,
+                        ...(network == "mainnet"
+                          ? ["--weakSubjectivitySyncLatest=true"]
+                          : []),
+                        "--eth1.providerUrls",
+                        ...executionClients.map((c) => c.endpoint),
+                      ],
                   resources: {
                     limits: { cpu: cpu, memory: memory },
                     requests: { cpu: cpu, memory: memory },

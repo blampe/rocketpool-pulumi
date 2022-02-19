@@ -12,6 +12,7 @@ export interface StatefulSetConfig {
   memory?: string;
   replicas?: number;
   volume?: VolumeConfig;
+  command?: string[];
 }
 
 export interface RocketpoolConfig extends StatefulSetConfig {

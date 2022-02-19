@@ -28,6 +28,7 @@ export class LighthouseBeacon implements ConsensusClient {
       tag: opts.tag || "v2.1.3-modern",
       cpu: opts.cpu || "750m",
       memory: opts.memory || "3Gi",
+      command: opts.command || [],
       external: opts.external || false,
       targetPeers: opts.targetPeers || 50,
       executionClients: executionClients,
@@ -49,6 +50,7 @@ export class LighthouseBeacon implements ConsensusClient {
     tag,
     cpu,
     memory,
+    command,
     external,
     targetPeers,
     executionClients,
@@ -114,33 +116,35 @@ export class LighthouseBeacon implements ConsensusClient {
                 {
                   name: "lighthouse-beacon",
                   image: `${image}:${tag}`,
-                  command: [
-                    "lighthouse",
-                    "beacon",
-                    "--datadir=/data",
-                    "--debug-level=info",
-                    `--network=${network}`,
-                    "--staking",
-                    "--http-address=0.0.0.0",
-                    "--validator-monitor-auto",
-                    "--metrics",
-                    "--metrics-address=0.0.0.0",
-                    "--private",
-                    "--slots-per-restore-point=8192", // Reduce storage space since we're only validating
-                    "--eth1-blocks-per-log-query=150",
-                    // TODO --import-all-attestations might help with delays?
-                    pulumi.interpolate`--eth1-endpoints=${pulumi
-                      .all(executionClients.map((c) => c.endpoint))
-                      .apply((endpoints) => endpoints.join(","))}`,
-                    ...(checkpointUrl !== undefined
-                      ? [
-                          pulumi.interpolate`--checkpoint-sync-url=${checkpointUrl}`,
-                        ]
-                      : []),
-                    ...(targetPeers !== 0
-                      ? [`--target-peers=${targetPeers}`]
-                      : []),
-                  ],
+                  command: command.length
+                    ? command
+                    : [
+                        "lighthouse",
+                        "beacon",
+                        "--datadir=/data",
+                        "--debug-level=info",
+                        `--network=${network}`,
+                        "--staking",
+                        "--http-address=0.0.0.0",
+                        "--validator-monitor-auto",
+                        "--metrics",
+                        "--metrics-address=0.0.0.0",
+                        "--private",
+                        "--slots-per-restore-point=8192", // Reduce storage space since we're only validating
+                        "--eth1-blocks-per-log-query=150",
+                        // TODO --import-all-attestations might help with delays?
+                        pulumi.interpolate`--eth1-endpoints=${pulumi
+                          .all(executionClients.map((c) => c.endpoint))
+                          .apply((endpoints) => endpoints.join(","))}`,
+                        ...(checkpointUrl !== undefined
+                          ? [
+                              pulumi.interpolate`--checkpoint-sync-url=${checkpointUrl}`,
+                            ]
+                          : []),
+                        ...(targetPeers !== 0
+                          ? [`--target-peers=${targetPeers}`]
+                          : []),
+                      ],
                   resources: {
                     limits: { cpu: cpu, memory: memory },
                     requests: { cpu: cpu, memory: memory },

@@ -28,6 +28,7 @@ export class TekuClient implements ConsensusClient {
       tag: opts.tag || "22.1.1-jdk17",
       cpu: opts.cpu || "4",
       memory: opts.memory || "3Gi",
+      command: opts.command || [],
       external: opts.external || false,
       targetPeers: opts.targetPeers || 74,
       executionClients: executionClients,
@@ -49,6 +50,7 @@ export class TekuClient implements ConsensusClient {
     tag,
     cpu,
     memory,
+    command,
     external,
     targetPeers,
     executionClients,
@@ -115,25 +117,29 @@ export class TekuClient implements ConsensusClient {
                 {
                   name: "teku",
                   image: `${image}:${tag}`,
-                  command: [
-                    "./bin/teku",
-                    "--metrics-enabled",
-                    "--metrics-port=8008",
-                    "--log-destination=CONSOLE",
-                    "--data-base-path=/data",
-                    `--network=${network}`,
-                    "--rest-api-enabled",
-                    "--rest-api-interface=0.0.0.0",
-                    "--rest-api-host-allowlist=*",
-                    `--p2p-peer-upper-bound=${targetPeers}`,
-                    pulumi.interpolate`--eth1-endpoints=${pulumi
-                      .all(executionClients.map((c) => c.endpoint))
-                      .apply((endpoints) => endpoints.join(","))}`,
-                    // e.g. --initial-state https://INFURA/eth/v2/debug/beacon/states/finalized
-                    ...(checkpointUrl !== undefined
-                      ? [pulumi.interpolate`--initial-state=${checkpointUrl}`]
-                      : []),
-                  ],
+                  command: command.length
+                    ? command
+                    : [
+                        "./bin/teku",
+                        "--metrics-enabled",
+                        "--metrics-port=8008",
+                        "--log-destination=CONSOLE",
+                        "--data-base-path=/data",
+                        `--network=${network}`,
+                        "--rest-api-enabled",
+                        "--rest-api-interface=0.0.0.0",
+                        "--rest-api-host-allowlist=*",
+                        `--p2p-peer-upper-bound=${targetPeers}`,
+                        pulumi.interpolate`--eth1-endpoints=${pulumi
+                          .all(executionClients.map((c) => c.endpoint))
+                          .apply((endpoints) => endpoints.join(","))}`,
+                        // e.g. --initial-state https://INFURA/eth/v2/debug/beacon/states/finalized
+                        ...(checkpointUrl !== undefined
+                          ? [
+                              pulumi.interpolate`--initial-state=${checkpointUrl}`,
+                            ]
+                          : []),
+                      ],
                   env: [
                     {
                       name: "TEKU_OPTS",

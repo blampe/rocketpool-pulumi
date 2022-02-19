@@ -128,6 +128,7 @@ pulumi config -s mainnet set --secret --path teku.checkpointUrl 'https://...@eth
 | rocketpool:infura: { eth1Endpoint: *secret* } | Secret. Address of your Infura Eth1 API. Useful as a fallback but should be avoided on mainnet.
 | rocketpool:infura: { eth2Endpoint: *secret* } | Secret. Address of your Infura Eth2 API. Useful as a fallback but should be avoided on mainnet.
 | rocketpool:kubeconfig: *string* | Path to an existing cluster's `kubeconfig`.
+| rocketpool:*client*: {  command: *list[string]* } | A custom command to start the container with, helpful for starting a container with "sleep infinity" to load data into the PVC.
 | rocketpool:*client*: {  external: *bool* } | Whether to expose the client to the internet for discovery. Optional, and defaults to false; incurs additional costs if enabled.
 | rocketpool:*client*: {  image: *string* } | Docker image to use.
 | rocketpool:*client*: {  tag: *string* } | Image tag to use.
