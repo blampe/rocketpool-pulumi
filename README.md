@@ -4,7 +4,7 @@
 protocol](https://docs.rocketpool.net/guides/node/responsibilities.html#how-eth2-staking-works)
 for next-gen [Ethereum](https://ethereum.org/en/eth2/).
 
-This repository containers two [Pulumi](http://pulumi.com) projects:
+This repository contains two [Pulumi](http://pulumi.com) projects:
 
 1. `./rocketpool-pulumi`: deploys the necessary components for staking with the
    Rocket Pool protocol into a Kubernetes cluster; and
@@ -12,7 +12,7 @@ This repository containers two [Pulumi](http://pulumi.com) projects:
    Autopilot](https://cloud.google.com/kubernetes-engine/docs/concepts/autopilot-overview)
    Kubernetes cluster, if you don't have already have one handy.
 
-Operating an RP node requires 16ETH to stake (vs. 32ETH for a full validator)
+Operating an RP node requires 17.6ETH to stake (vs. 32ETH for a full validator)
 and provides additional rewards via the RPL token. You should understand the
 long-term commitment and financial risks associated with staking before
 attempting to use this project.
@@ -20,22 +20,21 @@ attempting to use this project.
 (You can run a full validator with this setup, but you'll need to bring your
 own validator keys and deposits.)
 
-
 ## Motivation
 
-Rocket Pool is [*very
-easy*](https://docs.rocketpool.net/guides/node/docker.html#process-overview) to
+Rocket Pool is [_very
+easy_](https://docs.rocketpool.net/guides/node/docker.html#process-overview) to
 deploy as an all-in-one ["smartnode"](https://github.com/rocket-pool/smartnode)
 using their install scripts, and for most users this is sufficient.
 
 I wanted more control over my deployment topology. For example I wanted to
-* use clients not already bundled into the smartnode stack,
-* version and deploy components independently,
-* incorporate redundancy into the setup for high availability, and
-* deploy on a cloud provider for elasticity.
+
+- use clients not already bundled into the smartnode stack,
+- version and deploy components independently,
+- incorporate redundancy into the setup for high availability, and
+- deploy on a cloud provider for elasticity.
 
 [Kubernetes](https://kubernetes.io) was a natural fit.
-
 
 ## Requirements
 
@@ -44,18 +43,18 @@ get this up and running.
 
 ### Cloud Deployment
 
-* A [GCP
+- A [GCP
   account](https://console.cloud.google.com/home/dashboard?project=rocket-pool-328103),
   [`gcloud` binary](https://cloud.google.com/sdk/docs/downloads-interactive),
   and a
   [project](https://cloud.google.com/resource-manager/docs/creating-managing-projects)
   to install into.
-* A [Pulumi](https://www.pulumi.com) account. It's highly recommend you use
+- A [Pulumi](https://www.pulumi.com) account. It's highly recommend you use
   [GCP KMS for secret
   encryption](https://www.pulumi.com/docs/intro/concepts/secrets/#changing-the-secrets-provider-for-a-stack).
-* (optional) An [infura.io](http://infura.io) account for ETH1 fallback and/or
+- (optional) An [infura.io](http://infura.io) account for ETH1 fallback and/or
   checkpoint sync.
-* (optional) A [notification
+- (optional) A [notification
   channel](https://cloud.google.com/monitoring/support/notification-options)
   configured if you'd like to get alerted for operational issues like low
   volume capacity.
@@ -70,26 +69,24 @@ Ensure you have vertical pod autoscaling enabled by following the instructions
 
 See "Configuration" below for overriding storage classes.
 
-
 ## Supported Clients
 
 ### Consensus
 
-* [Lighthouse](https://github.com/sigp/lighthouse)
-* [Teku](https://github.com/ConsenSys/teku)
-* [Nimus](https://github.com/status-im/nimbus-eth2)
-* [Lodestar](https://github.com/ChainSafe/lodestar)
+- [Lighthouse](https://github.com/sigp/lighthouse)
+- [Teku](https://github.com/ConsenSys/teku)
+- [Nimus](https://github.com/status-im/nimbus-eth2)
+- [Lodestar](https://github.com/ChainSafe/lodestar)
 
 ### Execution
 
-* [Erigon](https://github.com/ledgerwatch/erigon)
-* [Nethermind](https://github.com/NethermindEth/nethermind)
-* [Infura](http://infura.io) (discouraged for mainnet)
+- [Erigon](https://github.com/ledgerwatch/erigon)
+- [Nethermind](https://github.com/NethermindEth/nethermind)
+- [Infura](http://infura.io) (discouraged for mainnet)
 
 ### Validation
 
-* Lighthouse is currently the only validator supported.
-
+- Lighthouse is currently the only validator supported.
 
 ## Usage
 
@@ -108,7 +105,6 @@ everything down and come back to it later.
 A 0.5 vCPU pod is always deployed with containers for the Lighthouse validator
 and the Rocket Pool rewards claim tool.
 
-
 ### Configuration
 
 The stack attempts to use sane defaults (depending on whether you're deploying
@@ -116,44 +112,45 @@ to mainnet or a testnet) as much as possible, but you can configure the
 overrides described in the table below.
 
 Some config values are expected to be encrypted and can be set like so:
+
 ```
 pulumi config -s mainnet set --secret --path teku.checkpointUrl 'https://...@eth2-beacon-mainnet.infura.io/eth/v2/debug/beacon/states/finalized'
 ```
 
-| config | description |
-| ------ | ------------ |
-| rocketpool:consensus: *list[string]*| A list of consensus clients to use. This is in priority order, so the validator will prefer to connect to the first client. Available values are: "lighthouse", "lodestar", "nimbus" and "teku".
-| rocketpool:execution: *list[string]* | A list of execution clients to use. This is inpriority order, so consensus clients will prefer to connect to the first execution client in this list. Available values are: "erigon", "nethermind" and "infura". Infura should be avoided on mainnet.
-| rocketpool:gkeMonitoring: *bool* | If this is a cloud deployment and a notification channel is configured on the cluster, then set this to "true" to receive operational alerts.
-| rocketpool:infura: { eth1Endpoint: *secret* } | Secret. Address of your Infura Eth1 API. Useful as a fallback but should be avoided on mainnet.
-| rocketpool:infura: { eth2Endpoint: *secret* } | Secret. Address of your Infura Eth2 API. Useful as a fallback but should be avoided on mainnet.
-| rocketpool:kubeconfig: *string* | Path to an existing cluster's `kubeconfig`.
-| rocketpool:*client*: {  command: *list[string]* } | A custom command to start the container with, helpful for starting a container with "sleep infinity" to load data into the PVC.
-| rocketpool:*client*: {  external: *bool* } | Whether to expose the client to the internet for discovery. Optional, and defaults to false; incurs additional costs if enabled.
-| rocketpool:*client*: {  image: *string* } | Docker image to use.
-| rocketpool:*client*: {  tag: *string* } | Image tag to use.
-| rocketpool:*client*: {  replicas: *int* } | How many instances to deploy. Set this to 0 to disable the client while preserving persistent volumes.
-| rocketpool:*client*: {  volume: { snapshot: *bool* } } | If "true" this will create a volume snapshot. Only set this after a volume has been created.
-| rocketpool:*client*: {  volume: { source: *string* } } | If set, new persistent volume claims will be created based on the volume snapshot with this name.
-| rocketpool:*client*: {  volume: { storage: *string* } } | The size of the persistent volume claim.
-| rocketpool:*client*: {  volume: { storageClass: *string* } } | The PVC's storage class.
-| rocketpool:*client*: {  targetPeers: *int* } | The maximum or desired number of peers.
-| rocketpool:*consensusclient*: { checkpointUrl: *string* } | Consensus clients accept the same options as execution clients, plus a `checkpointUrl:` option. For Lighthouse this can be an Infura Eth2 address; for Teku it's of the form given above.
-| rocketpool:rocketpool: { graffiti: *string* } | Graffiti for signed nodes.
-| rocketpool:rocketpool: { nodePassword: *secret* } | Secret. Password for the Rocket Pool node.
-
+| config                                                      | description                                                                                                                                                                                                                                           |
+| ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| rocketpool:consensus: _list[string]_                        | A list of consensus clients to use. This is in priority order, so the validator will prefer to connect to the first client. Available values are: "lighthouse", "lodestar", "nimbus" and "teku".                                                      |
+| rocketpool:execution: _list[string]_                        | A list of execution clients to use. This is inpriority order, so consensus clients will prefer to connect to the first execution client in this list. Available values are: "erigon", "nethermind" and "infura". Infura should be avoided on mainnet. |
+| rocketpool:gkeMonitoring: _bool_                            | If this is a cloud deployment and a notification channel is configured on the cluster, then set this to "true" to receive operational alerts.                                                                                                         |
+| rocketpool:infura: { eth1Endpoint: _secret_ }               | Secret. Address of your Infura Eth1 API. Useful as a fallback but should be avoided on mainnet.                                                                                                                                                       |
+| rocketpool:infura: { eth2Endpoint: _secret_ }               | Secret. Address of your Infura Eth2 API. Useful as a fallback but should be avoided on mainnet.                                                                                                                                                       |
+| rocketpool:kubeconfig: _string_                             | Path to an existing cluster's `kubeconfig`.                                                                                                                                                                                                           |
+| rocketpool:_client_: { command: _list[string]_ }            | A custom command to start the container with, helpful for starting a container with "sleep infinity" to load data into the PVC.                                                                                                                       |
+| rocketpool:_client_: { external: _bool_ }                   | Whether to expose the client to the internet for discovery. Optional, and defaults to false; incurs additional costs if enabled.                                                                                                                      |
+| rocketpool:_client_: { image: _string_ }                    | Docker image to use.                                                                                                                                                                                                                                  |
+| rocketpool:_client_: { tag: _string_ }                      | Image tag to use.                                                                                                                                                                                                                                     |
+| rocketpool:_client_: { replicas: _int_ }                    | How many instances to deploy. Set this to 0 to disable the client while preserving persistent volumes.                                                                                                                                                |
+| rocketpool:_client_: { volume: { snapshot: _bool_ } }       | If "true" this will create a volume snapshot. Only set this after a volume has been created.                                                                                                                                                          |
+| rocketpool:_client_: { volume: { source: _string_ } }       | If set, new persistent volume claims will be created based on the volume snapshot with this name.                                                                                                                                                     |
+| rocketpool:_client_: { volume: { storage: _string_ } }      | The size of the persistent volume claim.                                                                                                                                                                                                              |
+| rocketpool:_client_: { volume: { storageClass: _string_ } } | The PVC's storage class.                                                                                                                                                                                                                              |
+| rocketpool:_client_: { targetPeers: _int_ }                 | The maximum or desired number of peers.                                                                                                                                                                                                               |
+| rocketpool:_consensusclient_: { checkpointUrl: _string_ }   | Consensus clients accept the same options as execution clients, plus a `checkpointUrl:` option. For Lighthouse this can be an Infura Eth2 address; for Teku it's of the form given above.                                                             |
+| rocketpool:rocketpool: { graffiti: _string_ }               | Graffiti for signed nodes.                                                                                                                                                                                                                            |
+| rocketpool:rocketpool: { nodePassword: _secret_ }           | Secret. Password for the Rocket Pool node.                                                                                                                                                                                                            |
 
 ### Syncing
 
-Clients are initially *very over-provisioned* to speed up the sync process.
+Clients are initially _very over-provisioned_ to speed up the sync process.
 This works fine on testnets like Prater; after the sync is done, terminate the
 pod to automatically scale down its resource reservations (otherwise you'll be
 over-paying!).
 
 A mainnet sync will take much longer than it would if running locally, or it
 might not complete at all:
-* Nethermind requires at least "fast" / "pd-balanced" storage and takes about a week to sync.
-* Erigon will not complete and requires manually uploading a complete database
+
+- Nethermind requires at least "fast" / "pd-balanced" storage and takes about a week to sync.
+- Erigon will not complete and requires manually uploading a complete database
   to the container.
 
 TODO: Please file an issue if you'd like instructions for uploading chain data
@@ -169,16 +166,14 @@ and Teku for ~$5 a day.
 
 Your costs will vary depending on your configuration and region.
 
-
 ## Why Pulumi? Why not Helm?
 
 This is a hobby project that I don't expect much interest in, and I just find
 Typescript to be more enjoyable to work with than HCL, Kustomize, or YAML.
 Sorry!
 
-
 ## Similar Projects
 
-* [rocketpool-deploy](https://github.com/cloudstruct/rocketpool-deploy) (AWS, Terraform, Ansible)
-* [rp-ha](https://github.com/CryptoManufaktur-io/rp-ha) (Docker Swarm)
-* [rocketpool-helm](https://github.com/eskapaid/rocketpool-helm) (Kubernetes)
+- [rocketpool-deploy](https://github.com/cloudstruct/rocketpool-deploy) (AWS, Terraform, Ansible)
+- [rp-ha](https://github.com/CryptoManufaktur-io/rp-ha) (Docker Swarm)
+- [rocketpool-helm](https://github.com/eskapaid/rocketpool-helm) (Kubernetes)
