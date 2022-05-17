@@ -37,7 +37,7 @@ export class TekuClient implements ConsensusClient {
       volume: {
         snapshot: opts.volume?.snapshot || false,
         source: opts.volume?.source || "data-teku-0",
-        storage: opts.volume?.storage || (mainnet ? "40Gi" : "40Gi"),
+        storage: opts.volume?.storage || (mainnet ? "48Gi" : "40Gi"),
         storageClass: opts.volume?.storageClass || "fast",
       },
     });

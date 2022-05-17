@@ -25,7 +25,7 @@ export class LighthouseBeacon implements ConsensusClient {
       network: network,
       replicas: opts.replicas ?? 1,
       image: opts.image || "sigp/lighthouse",
-      tag: opts.tag || "v2.1.3-modern",
+      tag: opts.tag || "v2.2.1-modern",
       cpu: opts.cpu || "750m",
       memory: opts.memory || "3Gi",
       command: opts.command || [],
@@ -37,7 +37,7 @@ export class LighthouseBeacon implements ConsensusClient {
       volume: {
         snapshot: opts.volume?.snapshot || false,
         source: opts.volume?.source || "data-lighthouse-beacon-0",
-        storage: opts.volume?.storage || (mainnet ? "72Gi" : "72Gi"),
+        storage: opts.volume?.storage || (mainnet ? "96Gi" : "72Gi"),
         storageClass: opts.volume?.storageClass || "fast",
       },
     });

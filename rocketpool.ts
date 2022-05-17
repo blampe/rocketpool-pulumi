@@ -40,7 +40,7 @@ export class Rocketpool {
       provider: provider,
       tag: opts.tag || "v1.1.2",
       lighthouseTag:
-        config.getObject<{ tag: string }>("lighthouse")?.tag || "v2.1.3-modern",
+        config.getObject<{ tag: string }>("lighthouse")?.tag || "v2.2.1-modern",
       network: network,
       cpu: opts.cpu || "50m",
       memory: opts.memory || "128Mi",
@@ -224,6 +224,7 @@ chains:
                     "--datadir=/data/data/validators/lighthouse/",
                     "--debug-level=info",
                     "--init-slashing-protection",
+                    "--logfile-max-number=1",
                     `--network=${network}`,
                     // Lighthouse has funky timeout behavior with only 1
                     // beacon, so force it to use more aggressive timeouts
