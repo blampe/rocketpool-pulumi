@@ -1,3 +1,5 @@
 {
-  "main": "../bin/cluster/index.js"
+  "scripts": {
+    "start": "ts-node index.ts"
+  }
 }
