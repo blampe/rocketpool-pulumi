@@ -1,8 +1,6 @@
 import * as k8s from "@pulumi/kubernetes";
 import * as pulumi from "@pulumi/pulumi";
 
-import { Alerts } from "./alerts";
-
 import * as execution from "./clients/execution";
 import * as consensus from "./clients/consensus";
 
@@ -69,7 +67,3 @@ Rocketpool.fromConfig(
   consensusClients,
   config
 );
-
-if (config.getBoolean("gkeMonitoring")) {
-  new Alerts(network);
-}

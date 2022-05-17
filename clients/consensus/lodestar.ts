@@ -31,6 +31,7 @@ export class LodestarClient implements ConsensusClient {
       external: opts.external || false,
       targetPeers: opts.targetPeers || 30,
       executionClients: executionClients,
+      gkeMetrics: opts.gkeMetrics || false,
       volume: {
         snapshot: opts.volume?.snapshot || false,
         source: opts.volume?.source || "data-lodestar-0",
@@ -52,6 +53,7 @@ export class LodestarClient implements ConsensusClient {
     external,
     targetPeers,
     executionClients,
+    gkeMetrics,
     volume,
   }: ConsensusClientOptions) {
     this.enabled = replicas > 0;
@@ -255,6 +257,34 @@ export class LodestarClient implements ConsensusClient {
         }
       );
     }
+
+    if (gkeMetrics) {
+      new k8s.apiextensions.CustomResource(
+        "lodestar-pod-monitor",
+        {
+          apiVersion: "monitoring.googleapis.com/v1alpha1",
+          kind: "PodMonitoring",
+          metadata: {
+            name: "lodestar-pod-monitor",
+          },
+          spec: {
+            selector: {
+              matchLabels: {
+                app: "lodestar",
+              },
+            },
+            endpoints: [
+              {
+                port: "metrics",
+                interval: "3m",
+              },
+            ],
+          },
+        },
+        { provider: provider }
+      );
+    }
+
     if (external) {
       new k8s.core.v1.Service(
         "lodestar-external",

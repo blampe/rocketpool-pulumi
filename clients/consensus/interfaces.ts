@@ -11,6 +11,7 @@ export interface ConsensusClientConfig extends StatefulSetConfig {
   external?: boolean;
   targetPeers?: number;
   checkpointUrl?: pulumi.Output<string>;
+  gkeMetrics?: boolean;
 }
 
 export type ConsensusClientOptions = Omit<

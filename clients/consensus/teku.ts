@@ -33,6 +33,7 @@ export class TekuClient implements ConsensusClient {
       targetPeers: opts.targetPeers || 74,
       executionClients: executionClients,
       checkpointUrl: opts.checkpointUrl || pulumi.output(""),
+      gkeMetrics: opts.gkeMetrics || false,
       volume: {
         snapshot: opts.volume?.snapshot || false,
         source: opts.volume?.source || "data-teku-0",
@@ -55,6 +56,7 @@ export class TekuClient implements ConsensusClient {
     targetPeers,
     executionClients,
     checkpointUrl,
+    gkeMetrics,
     volume,
   }: ConsensusClientOptions) {
     this.enabled = replicas > 0;
@@ -123,6 +125,7 @@ export class TekuClient implements ConsensusClient {
                         "./bin/teku",
                         "--metrics-enabled",
                         "--metrics-port=8008",
+                        "--metrics-host-allowlist=*",
                         "--log-destination=CONSOLE",
                         "--data-base-path=/data",
                         `--network=${network}`,
@@ -276,6 +279,34 @@ export class TekuClient implements ConsensusClient {
         }
       );
     }
+
+    if (gkeMetrics) {
+      new k8s.apiextensions.CustomResource(
+        "teku-pod-monitor",
+        {
+          apiVersion: "monitoring.googleapis.com/v1alpha1",
+          kind: "PodMonitoring",
+          metadata: {
+            name: "teku-pod-monitor",
+          },
+          spec: {
+            selector: {
+              matchLabels: {
+                app: "teku",
+              },
+            },
+            endpoints: [
+              {
+                port: "metrics",
+                interval: "3m",
+              },
+            ],
+          },
+        },
+        { provider: provider }
+      );
+    }
+
     if (external) {
       new k8s.core.v1.Service(
         "teku-external",

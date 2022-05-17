@@ -33,6 +33,7 @@ export class LighthouseBeacon implements ConsensusClient {
       targetPeers: opts.targetPeers || 50,
       executionClients: executionClients,
       checkpointUrl: opts.checkpointUrl,
+      gkeMetrics: opts.gkeMetrics || false,
       volume: {
         snapshot: opts.volume?.snapshot || false,
         source: opts.volume?.source || "data-lighthouse-beacon-0",
@@ -55,6 +56,7 @@ export class LighthouseBeacon implements ConsensusClient {
     targetPeers,
     executionClients,
     checkpointUrl,
+    gkeMetrics,
     volume,
   }: ConsensusClientOptions) {
     this.enabled = replicas > 0;
@@ -265,6 +267,34 @@ export class LighthouseBeacon implements ConsensusClient {
         }
       );
     }
+
+    if (gkeMetrics) {
+      new k8s.apiextensions.CustomResource(
+        "lighthouse-pod-monitor",
+        {
+          apiVersion: "monitoring.googleapis.com/v1alpha1",
+          kind: "PodMonitoring",
+          metadata: {
+            name: "lighthouse-pod-monitor",
+          },
+          spec: {
+            selector: {
+              matchLabels: {
+                app: "lighthouse-beacon",
+              },
+            },
+            endpoints: [
+              {
+                port: "metrics",
+                interval: "3m",
+              },
+            ],
+          },
+        },
+        { provider: provider }
+      );
+    }
+
     if (external) {
       new k8s.core.v1.Service(
         "lighthouse-beacon-external",
